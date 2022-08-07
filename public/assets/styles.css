@@ -1,0 +1,32 @@
+body {
+    font-family: "Open Sans", sans-serif;
+    line-height: 1.6;
+}
+
+.add-todo-input,
+.edit-todo-input {
+    outline: none;
+}
+
+.add-todo-input:focus,
+.edit-todo-input:focus {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.view-opt-label,
+.date-label {
+    font-size: 0.8rem;
+}
+
+.edit-todo-input {
+    font-size: 1.7rem !important;
+}
+
+.todo-actions {
+    width: 100px;
+}
+
+.todo-created-info {
+    float: right;
+}

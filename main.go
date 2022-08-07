@@ -1,7 +1,8 @@
 package main
 
-import "fmt"
+import "routine_todo/models"
 
 func main() {
-	fmt.Println("arcenme")
+	db := models.SetupDB()
+	db.AutoMigrate(&models.Tasks{})
 }

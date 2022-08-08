@@ -2,6 +2,14 @@ $(document).ready(function () {
     // tooltip
     $('[data-toggle="tooltip"]').tooltip();
 
+    $("#deadline").datepicker({
+        format: "dd MM yyyy",
+        locale: 'id',
+        autoclose: true,
+        todayHighlight: true,
+        startDate: moment(new Date()).format('DD MMMM yyyy'),
+        orientation: "bottom right"
+    });
 
     // render task
     function renderTask(tasks) {
@@ -65,5 +73,51 @@ $(document).ready(function () {
 
     getTask()
 
+    // modal add
+    $('#btn-add').click(function () {
+        $('#form-add-edit').trigger('reset')
+        $('#form-add-edit input').removeClass('is-invalid')
+        $('.modal-add-edit-title').text('Add Task')
+        $('#submit-add-edit').val('add')
+        $('#modalAddAndEdit').modal('show')
+    })
 
+    // submit add/edit task
+    $('#submit-add-edit').click(function () {
+        const data = {
+            "task_name": $('#task_name').val(),
+            "assignee": $('#assignee').val(),
+            "deadline": $('#deadline').val() ? moment($('#deadline').val()).format('YYYY-MM-DD') : ''
+        }
+
+        if ($(this).val() == 'edit')
+            data['id'] = $('#id').val()
+
+        $.ajax({
+            contex: this,
+            type: 'POST',
+            url: '/api/routine',
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            data: JSON.stringify(data),
+            beforeSend: function () {
+                $(this).text('...saving')
+                $(this).prop('disabled', true)
+            }, success: function (res) {
+                $(this).text('Save changes')
+                $(this).prop('disabled', false)
+
+                $('#modalAddAndEdit').modal('hide')
+                getTask()
+            }, error: function (err) {
+                $(this).text('Save changes')
+                $(this).prop('disabled', false)
+
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Internal server error'
+                });
+            }
+        })
+    })
 })

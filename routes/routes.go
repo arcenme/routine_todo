@@ -3,6 +3,7 @@ package routes
 import (
 	"html/template"
 	"net/http"
+	"routine_todo/controllers"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -20,11 +21,15 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	r.Static("/public/assets", "./public/assets")
 	r.LoadHTMLGlob("public/pages/*.html")
 
+	// ====== VIEW
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"title": "Index",
 		})
 	})
+
+	// ====== API
+	r.GET("/api/routine", controllers.FindTasks)
 
 	return r
 }

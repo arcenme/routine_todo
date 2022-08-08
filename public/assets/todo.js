@@ -101,7 +101,7 @@ $(document).ready(function () {
             data['id'] = $('#id').val()
 
         $.ajax({
-            contex: this,
+            context: this,
             type: 'POST',
             url: '/api/routine',
             contentType: "application/json; charset=utf-8",
@@ -144,4 +144,37 @@ $(document).ready(function () {
             }
         })
     })
+
+    // modal delete
+    $('body').on('click', '.btn-delete', function () {
+        $('#submit-delete').data('id', $(this).data('id'))
+        $('#modalDelete').modal('show')
+    })
+
+    // submit delete
+    $('#submit-delete').click(function () {
+        $.ajax({
+            context: this,
+            type: 'DELETE',
+            dataType: 'json',
+            url: `/api/routine/${$(this).data('id')}`,
+            beforeSend: function () {
+                $(this).text('...deleting')
+                $(this).prop('disabled', true)
+            }, success: function (res) {
+                $(this).text('Delete')
+                $(this).prop('disabled', false)
+                $('#modalDelete').modal('hide')
+                getTask()
+            }, error: function (err) {
+                $(this).text('Delete')
+                $(this).prop('disabled', false)
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Internal server error'
+                });
+            }
+        })
+    })
+
 })

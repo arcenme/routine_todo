@@ -31,5 +31,6 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	// ====== API
 	r.GET("/api/routine", controllers.FindTasks)
 	r.POST("/api/routine", controllers.CreateTask)
+	r.DELETE("/api/routine/:id", controllers.DeleteTask)
 	return r
 }

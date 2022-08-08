@@ -71,3 +71,18 @@ func CreateTask(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"data": task})
 }
+
+// Delete a task
+func DeleteTask(c *gin.Context) {
+	// Get model if exist
+	db := c.MustGet("db").(*gorm.DB)
+	var book models.Tasks
+	if err := db.Where("task_id = ?", c.Param("id")).First(&book).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
+	}
+
+	db.Delete(&book)
+
+	c.JSON(http.StatusOK, gin.H{"data": true})
+}

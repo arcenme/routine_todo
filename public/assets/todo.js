@@ -11,6 +11,13 @@ $(document).ready(function () {
         orientation: "bottom right"
     });
 
+    // set input error
+    function setErrors(status, inputClass, validation, message) {
+        if (status) $(inputClass).addClass('is-invalid')
+        else $(inputClass).removeClass('is-invalid')
+        $(validation).text(status ? message : '')
+    }
+
     // render task
     function renderTask(tasks) {
         const html = tasks.map(task => {
@@ -113,6 +120,23 @@ $(document).ready(function () {
                 $(this).text('Save changes')
                 $(this).prop('disabled', false)
 
+                if (err.responseJSON.errors) {
+                    const arrayError = [];
+                    err.responseJSON.errors.forEach(error => {
+                        if (!arrayError.find(field => field === "Task"))
+                            setErrors(error.field === "Task", '#task_name', '#validationTask', error.message)
+                        if (!arrayError.find(field => field === "Assignee"))
+                            setErrors(error.field === "Assignee", '#assignee', '#validationAssignee', error.message)
+                        if (!arrayError.find(field => field === "Deadline"))
+                            setErrors(error.field === "Deadline", '#deadline', '#validationDeadline', error.message)
+
+                        arrayError.push(error.field)
+                    });
+
+                    return
+                }
+
+                $('#modalAddAndEdit').modal('hide')
                 iziToast.error({
                     title: 'Error',
                     message: 'Internal server error'

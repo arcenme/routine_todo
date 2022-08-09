@@ -89,21 +89,44 @@ $(document).ready(function () {
         $('#modalAddAndEdit').modal('show')
     })
 
+    // modal edit
+    $('body').on('click', '.btn-edit', function () {
+        $.ajax({
+            type: 'GET',
+            dataType: 'json',
+            url: `/api/routine/${$(this).data('id')}`,
+            success: function (res) {
+                $('#form-add-edit').trigger('reset')
+                $('#form-add-edit input').removeClass('is-invalid')
+                $('#id').val(res.data.id)
+                $('#task_name').val(res.data.task_name)
+                $('#assignee').val(res.data.assignee)
+                $('#deadline').val(moment(res.data.deadline).format('DD MMMM yyyy'))
+                $('.modal-add-edit-title').text('Edit Task')
+                $('#submit-add-edit').val('edit')
+                $('#modalAddAndEdit').modal('show')
+            }, error: function (err) {
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Internal server error'
+                });
+            }
+        })
+    })
+
     // submit add/edit task
     $('#submit-add-edit').click(function () {
         const data = {
+            "id": $('#id').val(),
             "task_name": $('#task_name').val(),
             "assignee": $('#assignee').val(),
             "deadline": $('#deadline').val() ? moment($('#deadline').val()).format('YYYY-MM-DD') : ''
         }
 
-        if ($(this).val() == 'edit')
-            data['id'] = $('#id').val()
-
         $.ajax({
             context: this,
-            type: 'POST',
-            url: '/api/routine',
+            type: $(this).val() == 'add' ? 'POST' : 'PATCH',
+            url: $(this).val() == 'add' ? '/api/routine' : `/api/routine/${data.id}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             data: JSON.stringify(data),

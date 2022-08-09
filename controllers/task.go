@@ -17,6 +17,12 @@ type CreateTaskInput struct {
 	Deadline string `json:"deadline" binding:"required"`
 }
 
+type UpdateTaskInput struct {
+	Task     string `json:"task_name" binding:"required"`
+	Assignee string `json:"assignee" binding:"required"`
+	Deadline string `json:"deadline" binding:"required"`
+}
+
 // Validation
 type ErrorMsg struct {
 	Field   string `json:"field"`
@@ -44,6 +50,19 @@ func FindTasks(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": tasks})
 }
 
+// Find a task
+func FindTask(c *gin.Context) {
+	// Get model if exist
+	var task models.Tasks
+	db := c.MustGet("db").(*gorm.DB)
+	if err := db.Where("task_id = ?", c.Param("id")).First(&task).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": task})
+}
+
 // Create new task
 func CreateTask(c *gin.Context) {
 	// Validate input
@@ -68,6 +87,44 @@ func CreateTask(c *gin.Context) {
 
 	db := c.MustGet("db").(*gorm.DB)
 	db.Create(&task)
+
+	c.JSON(http.StatusOK, gin.H{"data": task})
+}
+
+// Update a task
+func UpdateTask(c *gin.Context) {
+
+	db := c.MustGet("db").(*gorm.DB)
+	// Get model if exist
+	var task models.Tasks
+	if err := db.Where("task_id = ?", c.Param("id")).First(&task).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
+	}
+
+	// Validate input
+	var input UpdateTaskInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
+			out := make([]ErrorMsg, len(ve))
+			for i, fe := range ve {
+				out[i] = ErrorMsg{fe.Field(), getErrorMsg(fe)}
+			}
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"errors": out})
+		}
+		return
+	}
+
+	date := "2006-01-02"
+	deadline, _ := time.Parse(date, input.Deadline)
+
+	var updatedInput models.Tasks
+	updatedInput.Deadline = deadline
+	updatedInput.Assignee = input.Assignee
+	updatedInput.Task_Name = input.Task
+
+	db.Model(&task).Updates(updatedInput)
 
 	c.JSON(http.StatusOK, gin.H{"data": task})
 }

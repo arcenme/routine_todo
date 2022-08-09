@@ -23,6 +23,10 @@ type UpdateTaskInput struct {
 	Deadline string `json:"deadline" binding:"required"`
 }
 
+type UpdateTaskStatus struct {
+	Status string `json:"status" binding:"required"`
+}
+
 // Validation
 type ErrorMsg struct {
 	Field   string `json:"field"`
@@ -142,4 +146,36 @@ func DeleteTask(c *gin.Context) {
 	db.Delete(&book)
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
+}
+
+// Update a task
+func UpdateStatus(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+	// Get model if exist
+	var task models.Tasks
+	if err := db.Where("task_id = ?", c.Param("id")).First(&task).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
+	}
+
+	// Validate input
+	var input UpdateTaskStatus
+	if err := c.ShouldBindJSON(&input); err != nil {
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
+			out := make([]ErrorMsg, len(ve))
+			for i, fe := range ve {
+				out[i] = ErrorMsg{fe.Field(), getErrorMsg(fe)}
+			}
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"errors": out})
+		}
+		return
+	}
+
+	var updatedInput models.Tasks
+	updatedInput.IsDone = input.Status
+
+	db.Model(&task).Updates(updatedInput)
+
+	c.JSON(http.StatusOK, gin.H{"data": task})
 }

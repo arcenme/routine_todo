@@ -34,5 +34,6 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	r.GET("/api/routine/:id", controllers.FindTask)
 	r.PATCH("/api/routine/:id", controllers.UpdateTask)
 	r.DELETE("/api/routine/:id", controllers.DeleteTask)
+	r.PATCH("/api/routine/done/:id", controllers.UpdateStatus)
 	return r
 }

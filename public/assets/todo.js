@@ -24,7 +24,7 @@ $(document).ready(function () {
             return `<div class="row px-3 mb-2 align-items-center todo-item rounded">
                         <div class="col-auto m-1 p-0 d-flex align-items-center">
                             <h2 class="m-0 p-0">
-                                <i class="fa ${task.is_done == '1' ? 'fa-check-square-o' : 'fa-square-o'} text-primary btn m-0 p-0 btn-status" data-id="${task.id}" data-isdone="${task.is_done}" data-toggle="tooltip" data-placement="bottom" title="${task.is_done ? 'Mark as todo' : 'Masrk as done'}"></i>
+                                <i class="fa ${task.is_done == '1' ? 'fa-check-square-o' : 'fa-square-o'} text-primary btn m-0 p-0 btn-status" data-id="${task.id}" data-isdone="${task.is_done}" data-toggle="tooltip" data-placement="bottom" title="${task.is_done == '1' ? 'Mark as todo' : 'Masrk as done'}"></i>
                             </h2>
                         </div>
                         <div class="col px-1 m-1 d-flex align-items-center">
@@ -195,6 +195,31 @@ $(document).ready(function () {
                 iziToast.error({
                     title: 'Error',
                     message: 'Internal server error'
+                });
+            }
+        })
+    })
+
+    // update status
+    $('body').on('click', '.btn-status', function () {
+        $.ajax({
+            type: 'PATCH',
+            url: `/api/routine/done/${$(this).data('id')}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            data: JSON.stringify({ status: $(this).data('isdone') == '0' ? '1' : '0' }),
+            beforeSend: function () {
+                $(this).prop('disabled', true)
+            }, success: function (res) {
+                $(this).prop('disabled', false)
+                getTask()
+            }, error: function (err) {
+                console.log(err)
+                $(this).prop('disabled', false)
+
+                iziToast.error({
+                    title: 'Error',
+                    message: err.responseJSON.error ? err.responseJSON.error : 'Internal server error.'
                 });
             }
         })
